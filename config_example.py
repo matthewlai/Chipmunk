@@ -17,9 +17,11 @@
 
 INSTALLATION_NAME="My Installation"
 PUBLIC_ADDR="http://localhost:5000"
+
 DB_PATH="userdata.db"
 
 # Use a cryptographically-secure randomly-generated string here, AND KEEP IT SECRET!
+# For example, use: python -c "import secrets; print(secrets.token_hex(32))"
 SECRET_KEY="CHANGE_TO_YOUR_OWN_KEY!"
 
 UNITS=[ 'Unit A', 'Unit B', 'Unit C' ]
@@ -72,3 +74,24 @@ Questions? Contact: {contact_email}
 Thanks
 {installation_name}
 """
+
+NOTIFICATION_EMAIL_TEMPLATE="""Hi {name},
+
+You are receiving this message because you registered to receive messages for {unit}, and
+someone sent a message to {unit}.
+
+Sender: {sender_name} <{sender_email}>
+Note:
+{content}
+
+You may reply to this email to contact the sender, if they supplied an email address.
+
+Questions about the system? Contact: {contact_email}
+
+Thanks
+{installation_name}
+"""
+
+MAX_NAME_LENGTH=128
+MAX_EMAIL_LENGTH=128
+MAX_NOTE_LENGTH=2048

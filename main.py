@@ -61,13 +61,16 @@ def close_connection(exception):
     db.close()
 
 
-def SendEmail(email, subject, content):
+def SendEmail(email, subject, content, replyto = None):
   message = EmailMessage()
   message.set_content(content)
   message['Subject'] = subject
   message['From'] = config.SENDER_EMAIL
   message['To'] = email
   message['Date'] = formatdate()
+
+  if replyto is not None and '@' in replyto:
+    message['Reply-To'] = replyto
 
   context = ssl.create_default_context()
   if config.SMTP_MODE == "" or config.SMTP_MODE == "STARTTLS":
@@ -102,6 +105,11 @@ def GetAllValidatedRegistrants(unit):
   return result.fetchall()
 
 
+def GetAllRegisteredUnits():
+  result = get_db().execute('SELECT DISTINCT unit FROM registration WHERE validated = 1 ORDER BY unit')
+  return [ row[0] for row in result.fetchall() ]
+
+
 def RedactEmail(email):
   parts = email.split('@')
   if len(parts[0]) < 2:
@@ -116,7 +124,6 @@ def SendRegistrationListEmails(unit):
   all_reg_str = ''
   for (name, email) in all_registrants:
     all_reg_str += '{} <{}>\n'.format(name, RedactEmail(email))
-  app.logger.debug(all_reg_str)
 
   for (name, email) in all_registrants:
     subject = '{} Registration Updated'.format(config.INSTALLATION_NAME)
@@ -138,6 +145,9 @@ def HandleSignup(name, email, unit):
   if name == '':
     raise ValueError("Name is empty")
 
+  name = name[0:config.MAX_NAME_LENGTH]
+  email = email[0:config.MAX_EMAIL_LENGTH]
+
   if not unit in config.UNITS:
     raise ValueError("{} is invalid. Unless you are trying to break the program, this "
                      "shouldn't happen. Please contact {}.".format(unit, config.CONTACT_EMAIL))
@@ -155,49 +165,93 @@ def HandleSignup(name, email, unit):
   # either a typo (but still valid), or something malicious. Nothing we can do for a
   # typo, and the SMTP server should check for bad addresses. We don't need to courtesy-
   # check for the user here.
-  validation_token = secrets.token_urlsafe(16)
+  validation_token = secrets.token_urlsafe(32)
   SendValidationEmail(name, email, unit, validation_token)
 
   get_db().execute('INSERT INTO registration (name, email, unit, validated, validation_token) '
                    'VALUES (?, ?, ?, ?, ?)', (name, email, unit, False, validation_token))
 
-  app.logger.debug("Signing up: {} <{}>: {}".format(name, email, unit))
+  app.logger.info("Signing up: {} <{}>: {}".format(name, email, unit))
 
+
+def HandleNotify(sender_name, sender_email, unit, note):
+  if not sender_name:
+    raise ValueError("Name not specified")
+  if not unit:
+    raise ValueError("Unit not specified")
+  if not note:
+    raise ValueError("Note not specified")
+
+  if not sender_email or not '@' in sender_email:
+    sender_email = ""
+
+  sender_name = sender_name[0:config.MAX_NAME_LENGTH]
+  sender_email = sender_email[0:config.MAX_EMAIL_LENGTH]
+  note = note[0:config.MAX_NOTE_LENGTH]
+
+  sender_name = sender_name.strip()
+  if sender_name == '':
+    raise ValueError("Sender not specified")
+  if not unit in GetAllRegisteredUnits():
+    raise ValueError("Unit is invalid")
+  if note == "":
+    raise ValueError("Note is blank")
+
+  registrants = GetAllValidatedRegistrants(unit)
+  for (name, email) in registrants:
+    subject = '{} Email Notification'.format(config.INSTALLATION_NAME)
+    content = config.NOTIFICATION_EMAIL_TEMPLATE.format(
+        name=name, installation_name=config.INSTALLATION_NAME, unit=unit,
+        sender_name=sender_name, sender_email=sender_email, content=note,
+        contact_email=config.CONTACT_EMAIL)
+    SendEmail(email, subject, content, replyto=sender_email)
+
+  app.logger.info("Notify: {} <{}>: [{}] {}".format(sender_name, sender_email, unit, note[0:256]))
 
 @app.route('/')
 def index():
   return render_template('index.html',
                          title=config.INSTALLATION_NAME,
-                         units=config.UNITS)
+                         units=config.UNITS,
+                         registered_units=GetAllRegisteredUnits(),
+                         max_name_length=config.MAX_NAME_LENGTH,
+                         max_email_length=config.MAX_EMAIL_LENGTH,
+                         max_note_length=config.MAX_NOTE_LENGTH,
+                         contact_email=config.CONTACT_EMAIL)
 
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup', methods=['POST'])
 def signup():
-  if request.method == 'POST':
-    try:
-      HandleSignup(request.form['name'], request.form['email'], request.form['unit'])
-      flash("Successfully signed up for notification. "
-            "You should receive an email shortly to confirm your email address. "
-            "Check your spam folder if not.")
-    except ValueError as e:
-      flash(str(e))
-    except smtplib.SMTPRecipientsRefused as e:
-      flash("Failed to send validation email: {}".format(e))
-    except smtplib.SMTPException as e:
-      app.logger.error("Sending email failed: {}".format(e))
-      flash("Failed to send validation email due to server error. Contact admin.")
+  try:
+    HandleSignup(request.form['name'], request.form['email'], request.form['unit'])
+    flash("Successfully signed up for notification. "
+          "You should receive an email shortly to confirm your email address. "
+          "Check your spam folder if not.")
+  except ValueError as e:
+    flash(str(e))
+  except smtplib.SMTPRecipientsRefused as e:
+    flash("Failed to send validation email: {}".format(e))
+  except smtplib.SMTPException as e:
+    app.logger.error("Sending email failed: {}".format(e))
+    flash("Failed to send validation email due to server error. Contact admin.")
   return redirect(url_for('index'))
 
 
 @app.route('/notify', methods=['POST'])
 def notify():
+  try:
+    HandleNotify(request.form['name'], request.form['email'], request.form['unit'], request.form['note'])
+    flash("Note successfully sent to users registered for {}".format(request.form['unit']))
+  except ValueError as e:
+    flash(str(e))
   return redirect(url_for('index'))
 
 
 @app.route('/validate/<token>')
 def validate(token):
   try:
-    result = get_db().execute('SELECT rowid, name, email, unit FROM registration WHERE validation_token = ? LIMIT 1', (token,))
+    result = get_db().execute('SELECT rowid, name, email, unit FROM registration '
+                              'WHERE validation_token = ? LIMIT 1', (token,))
     result = result.fetchall()
     if not result:
       raise ValueError()
