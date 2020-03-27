@@ -1,0 +1,49 @@
+<!doctype html>
+<!--
+ Copyright 2020 Matthew Lai
+
+ This file is part of Chipmunk.
+
+ Chipmunk is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Chipmunk is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Chipmunk.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<html>
+	<title>{{title}}</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <body>
+    <h1>{{title}}</h1>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="messages"><p>{{ messages[0] }}</p></div>
+      {% endif %}
+    {% endwith %}
+    <h2>Notify Someone They Have a Parcel</h2>
+    <h2>Register for Notifications</h2>
+    <form action="{{ url_for('signup') }}" method="post">
+      Name:<br />
+      <input type="text" name="name"><br />
+      Email:<br />
+      <input type="email" name="email"><br />
+      <label for="unit">Select your unit:</label>
+      <select id="unit" name="unit">
+        <option value="none"></option>
+        {% for unit in units %}
+          <option value="{{ unit }}">{{ unit }}</option>
+        {% endfor %}
+      </select><br />
+      <input type="submit"><br />
+    </form>
+    <p>Note that your name and redacted email address will be shared with anyone else who
+    signs up for the same unit, in the past or in the future.</p>
+  </body>
+</html>
