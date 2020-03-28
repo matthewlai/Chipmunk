@@ -65,7 +65,8 @@
           </select><br />
           <input type="submit" value="Register"><br />
         </form>
-	<p class="notice">Please add {{ sender_email }} to your spam whitelist to avoid emails from the system getting classified as spam.</p>
+	      <p class="notice">Please add {{ sender_email }} to your spam whitelist to avoid emails from the system
+        getting classified as spam.</p>
         <p class="notice">Note that your name and redacted email address will be shared with anyone else who
         signs up for the same unit, in the past or in the future.</p>
       </div>
@@ -74,6 +75,7 @@
         <img class="sitemap" src="{{ url_for('static', filename='sitemap.jpg') }}" />
       </div>
       <p>Questions? Comments? Suggestions? Contact <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+      <p><a href="https://github.com/matthewlai/Chipmunk">Code on Github</a></p>
     </div>
   </body>
 </html>
