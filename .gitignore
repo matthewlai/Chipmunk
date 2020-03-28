@@ -2,6 +2,8 @@ config.py
 *.db
 *.pem
 
+run_linux_prod.sh
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

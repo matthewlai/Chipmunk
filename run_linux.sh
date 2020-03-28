@@ -1,3 +1,10 @@
 #!/bin/bash
 
-FLASK_APP=main.py FLASK_ENV=development flask run --host 0.0.0.0
+export FLASK_APP=main.py
+export FLASK_ENV=production
+
+# Define these for SSL
+export FLASK_RUN_CERT='/path/to/fullchain.pem'
+export FLASK_RUN_KEY='/path/to/privatekey.pem'
+
+flask run --host 0.0.0.0

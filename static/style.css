@@ -86,3 +86,7 @@ input[type=submit] {
 img.sitemap {
   width: 100%;
 }
+
+p.notice {
+  text-align: left;
+}

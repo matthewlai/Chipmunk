@@ -49,7 +49,7 @@ SMTP_PORT=465
 SMTP_USER="username"
 SMTP_PASS="password"
 
-SENDER_EMAIL="noreply@example.com"
+SENDER_EMAIL="Noreply <noreply@example.com>"
 
 LOG_FILE="info.log"
 LOG_LEVEL=logging.INFO

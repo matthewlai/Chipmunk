@@ -110,7 +110,9 @@ def GetAllValidatedRegistrants(unit):
 
 def GetAllRegisteredUnits():
   result = get_db().execute('SELECT DISTINCT unit FROM registration WHERE validated = 1 ORDER BY unit')
-  return [ row[0] for row in result.fetchall() ]
+  result = [ row[0] for row in result.fetchall() ]
+  result.sort(key=lambda unit: config.UNITS.index(unit))
+  return result
 
 
 def RedactEmail(email):
@@ -222,6 +224,7 @@ def index():
                          max_name_length=config.MAX_NAME_LENGTH,
                          max_email_length=config.MAX_EMAIL_LENGTH,
                          max_note_length=config.MAX_NOTE_LENGTH,
+			 sender_email=config.SENDER_EMAIL,
                          contact_email=config.CONTACT_EMAIL)
 
 
@@ -265,9 +268,9 @@ def validate(token):
     result = get_db().execute('UPDATE registration SET validated = 1 WHERE rowid = ?', (rowid,))
 
     SendRegistrationListEmails(unit)
-    flash('Email verified! You will receive an email if someone notifies your unit. An email will be sent with '
-          'a list of other users registered for the same unit (as a security precaution). An email has also been '
-          'sent to all other emails (if any) currently registered for {}.'.format(unit))
+    app.logger.info("Validated: {} <{}> {}".format(name, email, unit))
+    flash('Email verified! You will receive an email if someone sends a notification for {unit}. An email will be sent with '
+          'a list of other users registered for {unit} (as a security precaution).'.format(unit=unit))
   except ValueError as e:
     flash('Invalid token.')
   except Exception as e:
