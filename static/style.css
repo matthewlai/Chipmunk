@@ -83,6 +83,10 @@ input[type=submit] {
   margin-top: 10px;
 }
 
+label.error {
+  color: #f00;
+}
+
 img.sitemap {
   width: 100%;
 }
