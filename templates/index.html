@@ -20,49 +20,59 @@
 <html>
 	<title>{{title}}</title>
 	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
   <body>
     <h1>{{title}}</h1>
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div class="messages"><p>{{ messages[0] }}</p></div>
+        <div class="messages">{{ messages[0] }}</div><br />
       {% endif %}
     {% endwith %}
-    <h2>Send a Message</h2>
-    <form action="{{ url_for('notify') }}" method="post">
-      Your Name:<br />
-      <input type="text" name="name" maxlength="{{ max_name_length }}"><br />
-      Email (optional, if you want the recipient to be able to reply):<br />
-      <input type="email" name="email" maxlength="{{ max_email_length }}" optional><br />
-      <label for="unit">Which flat do you want to send the note to (if the flat number isn't here, they have not registered for notifications):</label><br />
-      <select id="unit" name="unit">
-        <option value="none"></option>
-        {% for unit in registered_units %}
-          <option value="{{ unit }}">{{ unit }}</option>
-        {% endfor %}
-      </select><br />
-      Note:<br />
-      <textarea rows="5" cols="60" name="note" maxlength="{{ max_note_length }}"></textarea><br />
-      <input type="submit"><br />
-    </form>
-    <hr />
-    <h2>Register for Notifications</h2>
-    <form action="{{ url_for('signup') }}" method="post">
-      Name:<br />
-      <input type="text" name="name" maxlength="{{ max_name_length }}"><br />
-      Email:<br />
-      <input type="email" name="email" maxlength="{{ max_email_length }}"><br />
-      <label for="unit">Select your flat:</label><br />
-      <select id="unit" name="unit">
-        <option value="none"></option>
-        {% for unit in units %}
-          <option value="{{ unit }}">{{ unit }}</option>
-        {% endfor %}
-      </select><br />
-      <input type="submit"><br />
-    </form>
-    <p>Note that your name and redacted email address will be shared with anyone else who
-    signs up for the same unit, in the past or in the future.</p>
-    <hr />
-    <p>Questions? Comments? Suggestions? Contact <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+    <div class="content">
+      <div class="section">
+        <h2>Send a Message</h2>
+        <form action="{{ url_for('notify') }}" method="post">
+          <label for="name">Your Name:</label>
+          <input type="text" name="name" maxlength="{{ max_name_length }}">
+          <label for="email">Email (optional):</label>
+          <input type="email" name="email" maxlength="{{ max_email_length }}" optional>
+          <label for="unit">Send note to:</label>
+          <select id="unit" name="unit">
+            <option value="none"></option>
+            {% for unit in registered_units %}
+              <option value="{{ unit }}">{{ unit }}</option>
+            {% endfor %}
+          </select><br />
+          <label for="note">Note:</label>
+          <textarea name="note" maxlength="{{ max_note_length }}"></textarea><br />
+          <input type="submit" value="Send"><br />
+        </form>
+      </div>
+      <div class="section">
+        <h2>Register for Notifications</h2>
+        <form action="{{ url_for('signup') }}" method="post">
+          <label for="name">Name:</label>
+          <input type="text" name="name" maxlength="{{ max_name_length }}">
+          <label for="email">Email:</label>
+          <input type="email" name="email" maxlength="{{ max_email_length }}">
+          <label for="unit">Select your flat:</label>
+          <select id="unit" name="unit">
+            <option value="none"></option>
+            {% for unit in units %}
+              <option value="{{ unit }}">{{ unit }}</option>
+            {% endfor %}
+          </select><br />
+          <input type="submit" value="Register"><br />
+        </form>
+        <p>Note that your name and redacted email address will be shared with anyone else who
+        signs up for the same unit, in the past or in the future.</p>
+      </div>
+      <div class="section">
+        <h2>Sitemap</h2>
+        <img class="sitemap" src="{{ url_for('static', filename='sitemap.jpg') }}" />
+      </div>
+      <p>Questions? Comments? Suggestions? Contact <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+    </div>
   </body>
 </html>

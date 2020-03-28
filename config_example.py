@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Chipmunk.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
+
 INSTALLATION_NAME="My Installation"
 PUBLIC_ADDR="http://localhost:5000"
 
@@ -49,6 +51,9 @@ SMTP_PASS="password"
 
 SENDER_EMAIL="noreply@example.com"
 
+LOG_FILE="info.log"
+LOG_LEVEL=logging.INFO
+
 VALIDATION_EMAIL_TEMPLATE="""Hi {name},
 
 Someone used your email address to sign up for {installation_name}. If it was you,
@@ -77,14 +82,13 @@ Thanks
 
 NOTIFICATION_EMAIL_TEMPLATE="""Hi {name},
 
-You are receiving this message because you registered to receive messages for {unit}, and
-someone sent a message to {unit}.
+You are receiving this message because you registered to receive messages for {unit}.
 
 Sender: {sender_name} <{sender_email}>
 Note:
 {content}
 
-You may reply to this email to contact the sender, if they supplied an email address.
+{contact_instructions}
 
 Questions about the system? Contact: {contact_email}
 

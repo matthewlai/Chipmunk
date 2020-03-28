@@ -21,6 +21,7 @@ from email.message import EmailMessage
 from email.utils import formatdate, parseaddr
 from flask import abort, Flask, flash, g, redirect, render_template, request, session, \
 	url_for
+import logging
 from markupsafe import escape
 import secrets
 import smtplib
@@ -31,6 +32,8 @@ app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 Flask.secret_key = config.SECRET_KEY
 
+logging.basicConfig(filename=config.LOG_FILE, level=config.LOG_LEVEL,
+                    format='%(asctime)s %(levelname)s %(name)s : %(message)s')
 
 def get_db():
   db = getattr(g, '_database', None)
@@ -176,11 +179,11 @@ def HandleSignup(name, email, unit):
 
 def HandleNotify(sender_name, sender_email, unit, note):
   if not sender_name:
-    raise ValueError("Name not specified")
+    raise ValueError("Name cannot be empty")
   if not unit:
     raise ValueError("Unit not specified")
   if not note:
-    raise ValueError("Note not specified")
+    raise ValueError("Note cannot be empty")
 
   if not sender_email or not '@' in sender_email:
     sender_email = ""
@@ -200,10 +203,12 @@ def HandleNotify(sender_name, sender_email, unit, note):
   registrants = GetAllValidatedRegistrants(unit)
   for (name, email) in registrants:
     subject = '{} Email Notification'.format(config.INSTALLATION_NAME)
+    contact_instructions = 'You may reply to this email to contact the sender.'\
+        if sender_email else 'The sender did not leave contact info. Please do not reply to this message.'
     content = config.NOTIFICATION_EMAIL_TEMPLATE.format(
         name=name, installation_name=config.INSTALLATION_NAME, unit=unit,
         sender_name=sender_name, sender_email=sender_email, content=note,
-        contact_email=config.CONTACT_EMAIL)
+        contact_instructions=contact_instructions, contact_email=config.CONTACT_EMAIL)
     SendEmail(email, subject, content, replyto=sender_email)
 
   app.logger.info("Notify: {} <{}>: [{}] {}".format(sender_name, sender_email, unit, note[0:256]))
