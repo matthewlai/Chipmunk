@@ -34,9 +34,9 @@
         <h2>Send a Message</h2>
         <form action="{{ url_for('notify') }}" method="post">
           <label for="name">Your Name:</label>
-          <input type="text" name="name" maxlength="{{ max_name_length }}">
+          <input type="text" name="name" maxlength="{{ max_name_length }}" value="{{ default_name }}">
           <label for="email">Email (optional):</label>
-          <input type="email" name="email" maxlength="{{ max_email_length }}" optional>
+          <input type="email" name="email" maxlength="{{ max_email_length }}" value="{{ default_email }}" optional>
           <label for="unit">Send note to:</label>
           <select id="unit" name="unit">
             <option value="none"></option>
@@ -45,7 +45,7 @@
             {% endfor %}
           </select><br />
           <label for="note">Note:</label>
-          <textarea name="note" maxlength="{{ max_note_length }}"></textarea><br />
+          <textarea name="note" maxlength="{{ max_note_length }}">{{ default_note }}</textarea><br />
           <input type="submit" value="Send"><br />
         </form>
       </div>
