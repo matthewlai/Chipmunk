@@ -217,6 +217,9 @@ def HandleNotify(sender_name, sender_email, unit, note):
 
 @app.route('/')
 def index():
+  default_name = session.get('default_name', '')
+  default_email = session.get('default_email', '')
+  default_note = session.get('default_note', '')
   return render_template('index.html',
                          title=config.INSTALLATION_NAME,
                          units=config.UNITS,
@@ -224,7 +227,10 @@ def index():
                          max_name_length=config.MAX_NAME_LENGTH,
                          max_email_length=config.MAX_EMAIL_LENGTH,
                          max_note_length=config.MAX_NOTE_LENGTH,
-			 sender_email=config.SENDER_EMAIL,
+                         default_name=default_name,
+                         default_email=default_email,
+                         default_note=default_note,
+			                   sender_email=config.SENDER_EMAIL,
                          contact_email=config.CONTACT_EMAIL)
 
 
@@ -249,6 +255,9 @@ def signup():
 def notify():
   try:
     HandleNotify(request.form['name'], request.form['email'], request.form['unit'], request.form['note'])
+    session['default_name'] = request.form['name']
+    session['default_email'] = request.form['email']
+    session['default_note'] = request.form['note']
     flash("Note successfully sent to users registered for {}".format(request.form['unit']))
   except ValueError as e:
     flash(str(e))
