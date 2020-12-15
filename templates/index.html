@@ -66,6 +66,10 @@
   </script>
   <body>
     <h1>{{title}}</h1>
+<!--    <div class="messages"><p>It has been brought to my attention that outlook.com (and probably other Microsoft-owned domains like @hotmail.com and @msn.com) are now rejecting emails from here.</p>
+<p>I have contacted Microsoft but I'm afraid there's not much else I can do in the mean time. If you are one of the few people who registered with an email address ending in @hotmail.com, @outlook.com, and @msn.com, you are probably not going to receive any email from my service until if/when Microsoft decides to do something about it :(.</p>
+<p>If you want to sign up with another email address, Gmail and Yahoo (and probably any other domain not owned by Microsoft) seem to work.</p>
+<p>Disclosure: I work for Alphabet which owns Google which owns Gmail, but this is personal opinion and does not reflect the view of my employer.</p></div><br /> -->
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         <div class="messages">{{ messages[0] }}</div><br />
